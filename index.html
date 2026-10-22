@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Premier League injury impact 2026-27</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#14171c;--muted:#5c6572;--line:#e3e6ea;--watch:#fff4d6;--gold:#e0a800}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1114;--card:#1a1d22;--text:#eceef1;--muted:#98a1ad;--line:#2c3038;--watch:#3a3115}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,sans-serif}
+header,main,footer{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:0 0 4px}
+.sub,footer{color:var(--muted);font-size:.85rem}
+.club{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:14px 0;overflow:hidden}
+.ch{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.crest{width:44px;height:44px;position:relative;flex:none}
+.crest img{width:44px;height:44px;object-fit:contain;position:relative}
+.mono{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.8rem}
+h2{font-size:1.05rem;margin:0}
+.n{color:var(--muted);font-size:.85rem}
+.p{padding:10px 14px;border-top:1px solid var(--line)}
+.p.w{background:var(--watch);border-left:4px solid var(--gold)}
+.row{display:flex;justify-content:space-between;gap:8px}
+.name{font-weight:600}
+.score{font-weight:700}
+.meta{color:var(--muted);font-size:.85rem}
+.eye{background:var(--gold);color:#201700;border-radius:6px;padding:1px 6px;font-size:.72rem;font-weight:700;margin-right:6px}
+.none{padding:12px 14px;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<header>
+<h1>Premier League injury impact</h1>
+<p class="sub" id="sub"></p>
+</header>
+<main id="main"></main>
+<footer>Estimates only. Not medical advice. Impact Score (0-10) weighs minutes played, goal involvement, replacement gap and fixtures. Club crests belong to their owners.</footer>
+
+<script>
+// ===== EDIT THIS SECTION ================================================
+var UPDATED = "22 Oct 2026";      // change when you edit
+var MATCHES_PLAYED = 9;           // league games played so far
+
+// club = id from the CLUBS list below. status: out | doubtful | returning
+// minutes/goals/assists = season totals. rating = replacement gap 0-1 (blank = 0.5)
+// weeksLeft = estimated weeks still to go (optional). Add one line per injured player:
+// {club:"arsenal", player:"Player Name", pos:"MID", injury:"hamstring", status:"out",
+//  minutes:700, goals:3, assists:2, rating:0.7, weeksLeft:"2-4"},
+var INJURIES = [
+];
+
+// total league goals per club so far (for goal share). Missing = goal share counts as 0.
+var TEAM_GOALS = {};  // e.g. {arsenal:18, chelsea:14}
+// ========================================================================
+
+var CLUBS = [
+ ["arsenal","Arsenal","ARS","#EF0107"],["aston-villa","Aston Villa","AVL","#670E36"],
+ ["bournemouth","AFC Bournemouth","BOU","#DA291C"],["brentford","Brentford","BRE","#E30613"],
+ ["brighton","Brighton & Hove Albion","BHA","#0057B8"],["chelsea","Chelsea","CHE","#034694"],
+ ["coventry","Coventry City","COV","#59CBE8"],["crystal-palace","Crystal Palace","CRY","#1B458F"],
+ ["everton","Everton","EVE","#003399"],["fulham","Fulham","FUL","#000000"],
+ ["hull","Hull City","HUL","#F5A12D"],["ipswich","Ipswich Town","IPS","#0044AA"],
+ ["leeds","Leeds United","LEE","#1D428A"],["liverpool","Liverpool","LIV","#C8102E"],
+ ["man-city","Manchester City","MCI","#6CABDD"],["man-united","Manchester United","MUN","#DA291C"],
+ ["newcastle","Newcastle United","NEW","#241F20"],["nottm-forest","Nottingham Forest","NFO","#DD0000"],
+ ["sunderland","Sunderland","SUN","#EB172B"],["tottenham","Tottenham Hotspur","TOT","#132257"]
+];
+
+function clamp(x){return Math.max(0,Math.min(1,x));}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+function score(p){
+  var ms = clamp((p.minutes||0)/(MATCHES_PLAYED*90||1));
+  var tg = TEAM_GOALS[p.club]||0;
+  var gs = tg>0 ? clamp(((p.goals||0)+(p.assists||0))/tg) : 0;
+  var gap = (p.rating===undefined||p.rating===""||p.rating===null) ? 0.5 : clamp(p.rating);
+  return Math.round(10*(0.4*ms+0.3*gs+0.2*gap+0.1*0.5)*10)/10;
+}
+
+function build(){
+  var rows = CLUBS.map(function(c){
+    var ps = INJURIES.filter(function(p){return p.club===c[0];}).map(function(p){
+      return {p:p, s:score(p)};
+    }).sort(function(a,b){return b.s-a.s;});
+    return {id:c[0],name:c[1],short:c[2],colour:c[3],ps:ps,top:ps.length?ps[0].s:0};
+  }).sort(function(a,b){return b.top-a.top || a.name.localeCompare(b.name);});
+
+  document.getElementById("sub").textContent =
+    "2026-27 \u00b7 updated "+UPDATED+" \u00b7 clubs ordered by their biggest absence";
+
+  document.getElementById("main").innerHTML = rows.map(function(c){
+    var body = c.ps.length ? c.ps.map(function(x,i){
+      var p=x.p, w=(i===0 && x.s>0);
+      return '<div class="p'+(w?' w':'')+'"><div class="row"><span class="name">'+
+        (w?'<span class="eye">ONE TO WATCH</span>':'')+esc(p.player)+'</span><span class="score">'+
+        x.s.toFixed(1)+'</span></div><div class="meta">'+esc(p.status)+' \u00b7 '+esc(p.injury)+
+        (p.pos?' \u00b7 '+esc(p.pos):'')+(p.weeksLeft?' \u00b7 est. '+esc(p.weeksLeft)+' more weeks':'')+
+        '</div></div>';
+    }).join("") : '<div class="none">No reported injuries.</div>';
+    return '<section class="club"><div class="ch"><div class="crest"><div class="mono" style="background:'+
+      c.colour+'">'+c.short+'</div><img src="crests/'+c.id+'.svg" alt="" onerror="this.style.display=\'none\'"></div>'+
+      '<div><h2>'+esc(c.name)+'</h2><div class="n">'+c.ps.length+' injured \u00b7 top Impact '+
+      c.top.toFixed(1)+'/10</div></div></div>'+body+'</section>';
+  }).join("");
+}
+build();
+</script>
+</body>
+</html>
