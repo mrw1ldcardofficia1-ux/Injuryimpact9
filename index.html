@@ -1,111 +1,167 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Premier League injury impact 2026-27</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Premier League Injury Impact</title>
+<meta name="description" content="Estimate how long a Premier League player is out and how many league points it could cost his club.">
 <style>
-:root{--bg:#f6f7f9;--card:#fff;--text:#14171c;--muted:#5c6572;--line:#e3e6ea;--watch:#fff4d6;--gold:#e0a800}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1114;--card:#1a1d22;--text:#eceef1;--muted:#98a1ad;--line:#2c3038;--watch:#3a3115}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,sans-serif}
-header,main,footer{max-width:760px;margin:0 auto;padding:16px}
-h1{font-size:1.4rem;margin:0 0 4px}
-.sub,footer{color:var(--muted);font-size:.85rem}
-.club{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:14px 0;overflow:hidden}
-.ch{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
-.crest{width:44px;height:44px;position:relative;flex:none}
-.crest img{width:44px;height:44px;object-fit:contain;position:relative}
-.mono{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.8rem}
-h2{font-size:1.05rem;margin:0}
-.n{color:var(--muted);font-size:.85rem}
-.p{padding:10px 14px;border-top:1px solid var(--line)}
-.p.w{background:var(--watch);border-left:4px solid var(--gold)}
-.row{display:flex;justify-content:space-between;gap:8px}
-.name{font-weight:600}
-.score{font-weight:700}
-.meta{color:var(--muted);font-size:.85rem}
-.eye{background:var(--gold);color:#201700;border-radius:6px;padding:1px 6px;font-size:.72rem;font-weight:700;margin-right:6px}
-.none{padding:12px 14px;color:var(--muted);font-size:.9rem}
+  :root {
+    --paper: #f3f1ea;
+    --ink: #172033;
+    --muted: #5b6475;
+    --tape: #fffdf6;
+    --line: #d9d5c6;
+    --alert: #c8372d;
+    --ok: #2f7d4f;
+    --warn: #b9791a;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 17px/1.55 Georgia, "Times New Roman", serif;
+  }
+  .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 40px 20px 64px; }
+  h1 {
+    font: 800 clamp(2.4rem, 11vw, 4.2rem)/0.95 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    letter-spacing: -0.03em;
+    margin: 0 0 16px;
+  }
+  .lede { color: var(--muted); max-width: 52ch; margin: 0 0 32px; }
+  .panel {
+    background: var(--tape);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 20px;
+  }
+  label { display: block; font-weight: 700; margin: 0 0 6px; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select {
+    font: inherit; padding: 12px; border: 2px solid var(--ink); border-radius: 4px;
+    background: #fff; color: var(--ink);
+  }
+  .field { margin-bottom: 20px; }
+  .rangeval { float: right; font-weight: 400; color: var(--muted); }
+  input[type=range] { accent-color: var(--ink); }
+  :focus-visible { outline: 3px solid var(--alert); outline-offset: 2px; }
+
+  .result { margin-top: 28px; }
+  .status {
+    display: inline-block; padding: 4px 12px; border-radius: 99px; color: #fff;
+    font: 700 0.9rem -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--warn);
+  }
+  .status.short { background: var(--ok); }
+  .status.long { background: var(--alert); }
+  .out {
+    font: 800 clamp(2.2rem, 10vw, 3.6rem)/1 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    letter-spacing: -0.03em; margin: 12px 0 4px;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  .grid div { border-top: 2px solid var(--ink); padding-top: 8px; }
+  .grid b { display: block; font: 800 1.6rem/1.1 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .grid span { color: var(--muted); font-size: 0.9rem; }
+  .bar { height: 14px; background: var(--line); border-radius: 2px; margin-top: 24px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--ink); width: 50%; transition: width .25s; }
+  .barcap { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+  footer { margin-top: 32px; color: var(--muted); font-size: 0.9rem; }
+  @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
 </head>
 <body>
-<header>
-<h1>Premier League injury impact</h1>
-<p class="sub" id="sub"></p>
-</header>
-<main id="main"></main>
-<footer>Estimates only. Not medical advice. Impact Score (0-10) weighs minutes played, goal involvement, replacement gap and fixtures. Club crests belong to their owners.</footer>
+<main>
+  <h1>How much does this injury cost?</h1>
+  <p class="lede">Pick the position and the injury. You get a typical time out, the league games he misses and a rough estimate of the points his club loses while he is sidelined.</p>
+
+  <form class="panel" onsubmit="return false" aria-label="Injury inputs">
+    <div class="field">
+      <label for="pos">Position</label>
+      <select id="pos"></select>
+    </div>
+    <div class="field">
+      <label for="inj">Injury</label>
+      <select id="inj"></select>
+    </div>
+    <div class="field">
+      <label for="imp">Importance to his club <span class="rangeval" id="impv">6 / 10</span></label>
+      <input id="imp" type="range" min="1" max="10" value="6">
+    </div>
+  </form>
+
+  <section class="result" aria-live="polite">
+    <span class="status" id="status">Mid-range absence</span>
+    <p class="out" id="weeks">3–6 weeks</p>
+    <p id="summary" style="margin:0;color:var(--muted)"></p>
+
+    <div class="grid">
+      <div><b id="rating">-0.00</b><span>Expected points lost per game</span></div>
+      <div><b id="wp">-0</b><span>League points lost over the absence</span></div>
+    </div>
+
+    <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+    <div class="barcap"><span>Back soon</span><span>Season over</span></div>
+  </section>
+
+  <footer>
+    Time-out ranges are rough, typical values and vary by grade of injury and by player. Impact numbers are illustrative estimates, not medical advice or a betting model. A Premier League season is 38 games, and cup and European fixtures are not counted here.
+  </footer>
+</main>
 
 <script>
-// ===== EDIT THIS SECTION ================================================
-var UPDATED = "22 Oct 2026";      // change when you edit
-var MATCHES_PLAYED = 9;           // league games played so far
+  // Position weight: how much one player in that role moves his club's results.
+  var POSITIONS = [
+    ["Goalkeeper", 0.9], ["Centre-back", 0.7], ["Full-back / wing-back", 0.5],
+    ["Defensive midfielder", 0.7], ["Central midfielder", 0.6],
+    ["Attacking midfielder", 0.8], ["Winger", 0.7], ["Striker", 1.0]
+  ];
+  // [name, min weeks, max weeks]
+  var INJURIES = [
+    ["Minor knock", 0, 1], ["Concussion", 1, 2], ["Ankle ligament sprain", 2, 6],
+    ["Calf strain", 2, 5], ["Hamstring strain", 3, 8], ["Groin injury", 3, 8],
+    ["Knee ligament (MCL)", 4, 8], ["Broken metatarsal", 6, 10],
+    ["Torn ACL", 34, 44]
+  ];
 
-// club = id from the CLUBS list below. status: out | doubtful | returning
-// minutes/goals/assists = season totals. rating = replacement gap 0-1 (blank = 0.5)
-// weeksLeft = estimated weeks still to go (optional). Add one line per injured player:
-// {club:"arsenal", player:"Player Name", pos:"MID", injury:"hamstring", status:"out",
-//  minutes:700, goals:3, assists:2, rating:0.7, weeksLeft:"2-4"},
-var INJURIES = [
-];
+  var $ = function (id) { return document.getElementById(id); };
+  POSITIONS.forEach(function (p, i) { $("pos").add(new Option(p[0], i)); });
+  INJURIES.forEach(function (j, i) { $("inj").add(new Option(j[0], i)); });
+  $("pos").value = 0; $("inj").value = 2;
 
-// total league goals per club so far (for goal share). Missing = goal share counts as 0.
-var TEAM_GOALS = {};  // e.g. {arsenal:18, chelsea:14}
-// ========================================================================
+  function update() {
+    var p = POSITIONS[+$("pos").value], j = INJURIES[+$("inj").value];
+    var imp = +$("imp").value;
+    $("impv").textContent = imp + " / 10";
 
-var CLUBS = [
- ["arsenal","Arsenal","ARS","#EF0107"],["aston-villa","Aston Villa","AVL","#670E36"],
- ["bournemouth","AFC Bournemouth","BOU","#DA291C"],["brentford","Brentford","BRE","#E30613"],
- ["brighton","Brighton & Hove Albion","BHA","#0057B8"],["chelsea","Chelsea","CHE","#034694"],
- ["coventry","Coventry City","COV","#59CBE8"],["crystal-palace","Crystal Palace","CRY","#1B458F"],
- ["everton","Everton","EVE","#003399"],["fulham","Fulham","FUL","#000000"],
- ["hull","Hull City","HUL","#F5A12D"],["ipswich","Ipswich Town","IPS","#0044AA"],
- ["leeds","Leeds United","LEE","#1D428A"],["liverpool","Liverpool","LIV","#C8102E"],
- ["man-city","Manchester City","MCI","#6CABDD"],["man-united","Manchester United","MUN","#DA291C"],
- ["newcastle","Newcastle United","NEW","#241F20"],["nottm-forest","Nottingham Forest","NFO","#DD0000"],
- ["sunderland","Sunderland","SUN","#EB172B"],["tottenham","Tottenham Hotspur","TOT","#132257"]
-];
+    var min = j[1], max = j[2], mid = (min + max) / 2;
+    $("weeks").textContent = max <= 1 ? "Up to 1 week" : min + "–" + max + " weeks";
 
-function clamp(x){return Math.max(0,Math.min(1,x));}
-function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
-  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+    var st = $("status");
+    st.className = "status";
+    if (max <= 3) { st.textContent = "Short absence"; st.classList.add("short"); }
+    else if (max <= 10) { st.textContent = "Mid-range absence"; }
+    else { st.textContent = "Season-ending"; st.classList.add("long"); }
 
-function score(p){
-  var ms = clamp((p.minutes||0)/(MATCHES_PLAYED*90||1));
-  var tg = TEAM_GOALS[p.club]||0;
-  var gs = tg>0 ? clamp(((p.goals||0)+(p.assists||0))/tg) : 0;
-  var gap = (p.rating===undefined||p.rating===""||p.rating===null) ? 0.5 : clamp(p.rating);
-  return Math.round(10*(0.4*ms+0.3*gs+0.2*gap+0.1*0.5)*10)/10;
-}
+    // About one league game per week of absence, capped at the 38-game season.
+    var games = Math.min(38, Math.max(1, Math.round(mid)));
+    // Expected points lost per game: position weight x importance x 0.04 (up to about 0.4).
+    var ppg = p[1] * imp * 0.04;
+    var total = ppg * games;
+    $("rating").textContent = "-" + ppg.toFixed(2);
+    $("wp").textContent = "-" + total.toFixed(1);
 
-function build(){
-  var rows = CLUBS.map(function(c){
-    var ps = INJURIES.filter(function(p){return p.club===c[0];}).map(function(p){
-      return {p:p, s:score(p)};
-    }).sort(function(a,b){return b.s-a.s;});
-    return {id:c[0],name:c[1],short:c[2],colour:c[3],ps:ps,top:ps.length?ps[0].s:0};
-  }).sort(function(a,b){return b.top-a.top || a.name.localeCompare(b.name);});
+    $("summary").textContent = "A " + p[0].toLowerCase() + " with a " + j[0].toLowerCase() +
+      " typically misses about " + games + " league " + (games === 1 ? "game" : "games") +
+      " (" + Math.round(games / 38 * 100) + "% of the season). His club could expect to drop roughly " +
+      total.toFixed(1) + " points over that stretch.";
 
-  document.getElementById("sub").textContent =
-    "2026-27 \u00b7 updated "+UPDATED+" \u00b7 clubs ordered by their biggest absence";
-
-  document.getElementById("main").innerHTML = rows.map(function(c){
-    var body = c.ps.length ? c.ps.map(function(x,i){
-      var p=x.p, w=(i===0 && x.s>0);
-      return '<div class="p'+(w?' w':'')+'"><div class="row"><span class="name">'+
-        (w?'<span class="eye">ONE TO WATCH</span>':'')+esc(p.player)+'</span><span class="score">'+
-        x.s.toFixed(1)+'</span></div><div class="meta">'+esc(p.status)+' \u00b7 '+esc(p.injury)+
-        (p.pos?' \u00b7 '+esc(p.pos):'')+(p.weeksLeft?' \u00b7 est. '+esc(p.weeksLeft)+' more weeks':'')+
-        '</div></div>';
-    }).join("") : '<div class="none">No reported injuries.</div>';
-    return '<section class="club"><div class="ch"><div class="crest"><div class="mono" style="background:'+
-      c.colour+'">'+c.short+'</div><img src="crests/'+c.id+'.svg" alt="" onerror="this.style.display=\'none\'"></div>'+
-      '<div><h2>'+esc(c.name)+'</h2><div class="n">'+c.ps.length+' injured \u00b7 top Impact '+
-      c.top.toFixed(1)+'/10</div></div></div>'+body+'</section>';
-  }).join("");
-}
-build();
+    $("fill").style.width = Math.max(4, games / 38 * 100) + "%";
+  }
+  ["pos", "inj", "imp"].forEach(function (id) { $(id).addEventListener("input", update); });
+  update();
 </script>
 </body>
 </html>
